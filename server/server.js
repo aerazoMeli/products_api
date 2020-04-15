@@ -4,28 +4,30 @@ const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const verifyToken = require('./middlewares/auth');
 
+// //Cors
+// var whitelist = ['http://example1.com']
+// var corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true)
+//     } else {
+//       callback(new Error('Not allowed by CORS'))
+//     }
+//   }
+// }
 
-//Cors
-var whitelist = ['http://example1.com', 'http://127.0.0.1']
-var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
-}
+app.use(cors());
 
-//app.use(cors(corsOptions));
 //parse app/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 
 let Product = require('./models/Product');
 
 //Endpoint PING
-app.get('/ping', (req, res) =>{
+app.get('/ping',(req, res) =>{
+    console.log(req.headers);
     res.send('pong');
 });
 
@@ -42,7 +44,8 @@ app.post('/login', (req, res) => {
 });
 
 //Endpoints PRODUCT
-app.get('/products', (req, res) => {
+app.get('/products',[verifyToken] ,(req, res) => {
+
     Product.find().exec((err, products) => {
 
         if(err){
@@ -56,7 +59,7 @@ app.get('/products', (req, res) => {
     });
 });
 
-app.post('/products', (req, res) => {
+app.post('/products',[verifyToken], (req, res) => {
 
     const { name, price }= req.body;
 
@@ -79,7 +82,7 @@ app.post('/products', (req, res) => {
 
 });
 
-app.put('/products/:id', (req, res) => {
+app.put('/products/:id',[verifyToken] ,(req, res) => {
 
     const { id } = req.params;
     const { name, price } = req.body;
@@ -105,7 +108,7 @@ app.put('/products/:id', (req, res) => {
 
 });
 
-app.delete('/products/:id', (req, res) => {
+app.delete('/products/:id',[verifyToken], (req, res) => {
 
     const { id } = req.params;
 
