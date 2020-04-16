@@ -6,6 +6,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const verifyToken = require('./middlewares/auth');
 
+
+const Joi = require('joi');
+
+const schemaProduct = Joi.object().keys({
+    name: Joi.string().alphanum().max(100).required(),
+    price: Joi.number().integer().required()
+});
+
 // //Cors
 // var whitelist = ['http://example1.com']
 // var corsOptions = {
@@ -61,7 +69,16 @@ app.get('/products',[verifyToken] ,(req, res) => {
 
 app.post('/products',[verifyToken], (req, res) => {
 
-    const { name, price }= req.body;
+    const { name, price } = req.body;
+
+    const result = Joi.validate({name, price},schemaProduct);
+
+    const { value, error } = result; 
+    const valid = error == null; 
+
+    if(!valid){
+        return res.status(500).json({err: result});
+    }
 
     let producto = new Product({
         name,
